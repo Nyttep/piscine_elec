@@ -13,7 +13,7 @@ void	delay_500()
 
 int main()
 {
-	float cycle = 0.1;
+	float cycle = 1;
 	DDRB |= (1 << PB1); //setting DDRB1 to 1 configuring it to output
 	PORTB &= ~(1 << PB1); //setting PORTB1 to 0 configuring it to output LOW
 
@@ -32,24 +32,24 @@ int main()
 	TCCR1A &= ~(1 << COM1A0);
 	TCCR1A |= (1 << COM1A1);
 
-	ICR1 = 16000000 / 1024; //setting max value of timer to 16000000 / 2048(p131-132)
-	OCR1A = ICR1 * cycle; //setting a step in timer
+	ICR1 = 7812; //setting max value of timer to 16000000 / 2048(p131-132)
+	OCR1A = 781 * cycle; //setting a step in timer
 	
 	DDRD = DDRD & ~(1 << PD2) & ~(1 << PD4); //setting DDRD2 DDR4 to 0 configuring it to input
 	PORTD = PORTD | (1 << PD2) | (1 << PD4); //setting PORTD2 DDR4 to 1 activating the pull-up resistor
 
 	while (1)
 	{
-		OCR1A = ICR1 * cycle; //setting a step in timer
-		if (((PIND & (1 << PD2)) == 0) && cycle <= 1)
+		OCR1A = 781 * cycle; //setting a step in timer
+		if (((PIND & (1 << PD2)) == 0) && cycle < 10)
 		{
-			cycle += 0.1;
-			_delay_ms(100);
+			cycle += 1;
+			_delay_ms(500);
 		}
-		if (((PIND & (1 << PD4)) == 0) && cycle >= 0.2)
+		if (((PIND & (1 << PD4)) == 0) && cycle > 1)
 		{
-			cycle -= 0.1;
-			_delay_ms(100);
+			cycle -= 1;
+			_delay_ms(500);
 		}
 	}
 	return 0;
