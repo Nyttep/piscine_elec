@@ -24,14 +24,14 @@ INCS_NAME =
 INCS_PATH =	includes
 INCS = $(addprefix $(INCS_PATH)/, $(INCS_NAME))
 
-F_CPU="default"
+F_CPU="115200"
 
 all: hex flash
 
 hex: ${HEX_NAME}
 
-${NAME}: ${SRCS_NAME}
-	${CC} ${CFLAGS} ${SRCS_NAME} -o $@
+%.bin: ${SRCS_PATH}/%.c
+	${CC} ${CFLAGS} ${SRCS} -o ${NAME}
 
 ${HEX_NAME}: ${NAME}
 	avr-objcopy ${OFLAGS} $< $@

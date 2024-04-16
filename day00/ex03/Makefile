@@ -2,7 +2,15 @@
 CC = avr-gcc
 CFLAGS = -mmcu=atmega328p -DF_CPU=${F_CPU} -Os
 
-NAME = main.hex
+OBJCPY = avr-objcopy
+OFLAGS = -O ihex
+
+DUDE = avrdude
+DFLAGS = -c arduino -b ${F_CPU} -p ATmega328P -U flash:w:${HEX_NAME} -P /dev/ttyUSB0
+
+NAME = main.bin
+
+HEX_NAME = main.hex
 
 RM = rm -rf
 
@@ -16,15 +24,20 @@ INCS_NAME =
 INCS_PATH =	includes
 INCS = $(addprefix $(INCS_PATH)/, $(INCS_NAME))
 
-F_CPU="default"
+F_CPU="115200"
 
 all: hex flash
 
-hex:
-	${CC} ${CFLAGS} ${SRCS_NAME} -o main.bin && avr-objcopy -O ihex main.bin main.hex
+hex: ${HEX_NAME}
 
-flash:
-	avrdude -c arduino -b ${F_CPU} -p ATmega328P -U flash:w:main.hex -P /dev/ttyUSB0
+%.bin: ${SRCS_PATH}/%.c
+	${CC} ${CFLAGS} ${SRCS} -o ${NAME}
+
+${HEX_NAME}: ${NAME}
+	avr-objcopy ${OFLAGS} $< $@
+
+flash: ${HEX}
+	${DUDE} ${DFLAGS}
 
 clean:
 	${RM} main.bin && ${RM} ${NAME}
