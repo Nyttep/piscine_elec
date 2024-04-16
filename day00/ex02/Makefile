@@ -40,7 +40,7 @@ flash: ${HEX}
 	${DUDE} ${DFLAGS}
 
 clean:
-	${RM} main.bin && ${RM} ${NAME}
+	${RM} ${NAME} && ${RM} ${HEX_NAME}
 
 re: clean all
 
