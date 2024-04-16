@@ -6,7 +6,7 @@ OBJCPY = avr-objcopy
 OFLAGS = -O ihex
 
 DUDE = avrdude
-DFLAGS = -c arduino -b ${F_CPU} -p ATmega328P -U flash:w:${HEX_NAME} -P /dev/ttyUSB0
+DFLAGS = -c arduino -b 115200 -p ATmega328P -U flash:w:${HEX_NAME} -P /dev/ttyUSB0
 
 NAME = main.bin
 
@@ -24,7 +24,7 @@ INCS_NAME =
 INCS_PATH =	includes
 INCS = $(addprefix $(INCS_PATH)/, $(INCS_NAME))
 
-F_CPU="115200"
+F_CPU=16000000UL
 
 all: hex flash
 
