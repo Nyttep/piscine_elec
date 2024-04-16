@@ -1,4 +1,5 @@
+long int a = F_CPU;
+
 int main()
 {
-	return 0;
 }
