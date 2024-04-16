@@ -4,7 +4,7 @@ void	delay_500()
 {
 	uint32_t	i = 0;
 
-	while (i < 190000)
+	while (i < 120000)
 	{
 		i++;
 	}
