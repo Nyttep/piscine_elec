@@ -4,7 +4,7 @@ void	delay_500()
 {
 	uint32_t	i = 0;
 
-	while (i < 350000)
+	while (i < 190000)
 	{
 		i++;
 	}
@@ -18,6 +18,7 @@ int main()
 	while (1)
 	{
 		PORTB ^= (1 << PB1); //switching state of PORTB1 so it blinks
+		delay_500();
 		delay_500();
 	}
 	return 0;
