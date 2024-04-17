@@ -1,16 +1,6 @@
 #include <avr/io.h>
 #include <util/delay.h>
 
-void	delay_500()
-{
-	uint32_t	i = 0;
-
-	while (i < 350000)
-	{
-		i++;
-	}
-}
-
 int main()
 {
 	float cycle = 1;
