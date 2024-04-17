@@ -36,7 +36,7 @@ int main()
 			cycle += 1;
 			_delay_ms(500);
 		}
-		if (((PIND & (1 << PD4)) == 0) && cycle > 1)
+		if (((PIND & (1 << PD4)) == 0) && cycle > 2)
 		{
 			cycle -= 1;
 			_delay_ms(500);
