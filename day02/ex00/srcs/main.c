@@ -2,7 +2,11 @@
 #include <util/delay.h>
 #include <avr/interrupt.h>
 
-ISR(INT0_vect)
+/*
+1
+*/
+
+ISR(INT0_vect) //interrupt funciont when button is pressed
 {
 	PORTB ^= (1 << PB1);
 }

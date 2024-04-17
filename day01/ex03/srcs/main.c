@@ -22,15 +22,15 @@ int main()
 	TCCR1A &= ~(1 << COM1A0);
 	TCCR1A |= (1 << COM1A1);
 
-	ICR1 = 7812; //setting max value of timer to 16000000 / 2048(p131-132)
-	OCR1A = 781 * cycle; //setting a step in timer
+	ICR1 = 15626; //setting max value of timer to 16000000 / 1024(p131-132)
+	OCR1A = 1562 * cycle; //setting a step in timer
 	
 	DDRD = DDRD & ~(1 << PD2) & ~(1 << PD4); //setting DDRD2 DDR4 to 0 configuring it to input
 	PORTD = PORTD | (1 << PD2) | (1 << PD4); //setting PORTD2 DDR4 to 1 activating the pull-up resistor
 
 	while (1)
 	{
-		OCR1A = 781 * cycle; //setting a step in timer
+		OCR1A = 1562 * cycle; //setting a step in timer
 		if (((PIND & (1 << PD2)) == 0) && cycle < 10)
 		{
 			cycle += 1;

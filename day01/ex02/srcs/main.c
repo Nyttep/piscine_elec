@@ -20,7 +20,7 @@ int main()
 	TCCR1A &= ~(1 << COM1A0);
 	TCCR1A |= (1 << COM1A1);
 
-	ICR1 = 16000000 / 1024; //setting max value of timer to 16000000 / 2048(p131-132)
+	ICR1 = 16000000 / 1024; //setting max value of timer to 16000000 / 1024(p131-132)
 	OCR1A = ICR1 / 10; 
 	
 	while (1)
