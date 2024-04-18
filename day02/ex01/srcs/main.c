@@ -52,8 +52,7 @@ int main()
 
 	OCR0A = 78;//setting max value of timer to (16000000 / 1024) / 200 to get 200Hz
 
-	// TIMSK0 |= (1 << TOIE0); //enabling OCR0A match interrupt
-	TIMSK0 |= (1 << OCIE0A); //enabling OCR0A match interrupt
+	TIMSK0 |= (1 << OCIE0A);//enabling OCR1A match interrupt
 	sei(); //enabling interrupts
 
 	while (1)
