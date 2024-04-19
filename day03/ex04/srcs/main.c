@@ -35,7 +35,7 @@ void	uart_init()
 	PRR &= ~(1 << PRUSART0);//making sure the USART0 is awake (p54)
 
 	UCSR0C &= ~(1 << UMSEL00) & ~(1 << UMSEL01);// setting asynchronous mode
-	UCSR0A |= (1 << U2X0);//setting clock as normal
+	UCSR0A |= (1 << U2X0);//setting clock as double speed
 	//setting UBRR0 to have a baudrate of 115200
 	UBRR0L = (uint8_t)(16 & 0xFF);
 	UBRR0H = (uint8_t)(16 >> 8);
