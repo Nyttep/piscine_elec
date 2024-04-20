@@ -41,12 +41,13 @@ void	uart_init()
 
 void print_hex_value(uint8_t data)
 {
-	char hex[5];
+	char hex[4];
 	hex[0] = "0123456789ABCDEF"[data >> 4];
 	hex[1] = "0123456789ABCDEF"[data & 0x0F];
-	hex[2] = '\r';
-	hex[3] = '\n';
-	hex[4] = '\0';
+	hex[2] = ' ';
+	// hex[2] = '\r';
+	// hex[3] = '\n';
+	hex[3] = '\0';
 	uart_printstr(hex);
 }
 
@@ -113,6 +114,7 @@ void	send_status(char status)
 		{
 			uart_printstr("Uknownm status: ");
 			print_hex_value(status & 0b11111000);
+			uart_printstr("\r\n");
 		}
 	}
 }
@@ -123,7 +125,7 @@ uint8_t	i2c_response(uint8_t status_check)
 
 	while (!(TWCR & (1 << TWINT)));//waiting for byte to be sent
 	status = TWSR;
-	send_status(status);
+	// send_status(status);
 	if (!((status & 0b11111000) == status_check))//checking if status code is right
 	{
 		uart_printstr("ERROR\r\n");
@@ -143,6 +145,7 @@ void	i2c_init()
 
 void	i2c_start(uint8_t address, uint8_t operation)
 {
+	TWBR = 72;//setting bitrate register
 	TWCR = (1 << TWSTA) | (1 << TWEN) | (1 << TWINT);//sending START
 
 	if (i2c_response(TW_START))
@@ -175,6 +178,7 @@ void	i2c_start(uint8_t address, uint8_t operation)
 
 void	i2c_rstart(uint8_t address, uint8_t operation)
 {
+	TWBR = 72;//setting bitrate register
 	TWCR = (1 << TWSTA) | (1 << TWEN) | (1 << TWINT);//sending START
 
 	if (i2c_response(TW_REP_START))
@@ -215,9 +219,6 @@ void i2c_write(unsigned char data)
 
 uint8_t	i2c_read(uint8_t last)
 {
-	while (!(TWCR & (1 << TWINT)));//waiting for new data
-	i2c_response(TW_MR_DATA_ACK);
-	uint8_t	msg = TWDR;
 	if (last)
 	{
 		TWCR &= ~(1 << TWEA);
@@ -225,6 +226,12 @@ uint8_t	i2c_read(uint8_t last)
 	}
 	else
 		TWCR |= (1 << TWINT) | (1 << TWEA);
+	while (!(TWCR & (1 << TWINT)));//waiting for new data
+	uint8_t	msg = TWDR;
+	if (last)
+		i2c_response(TW_MR_DATA_NACK);
+	else
+		i2c_response(TW_MR_DATA_ACK);
 	print_hex_value(msg);
 	return (msg);
 }
@@ -238,34 +245,40 @@ void	read_measure()
 {
 	uint8_t	data = 0xFF;
 
+	i2c_start(0x38, TW_READ);
+	data = i2c_read(0);
 	while (data & (1 << 7))
 	{
 		i2c_rstart(0x38, TW_READ);
 		data = i2c_read(0);
 	}
-	// print_hex_value(data);
 	for (uint8_t i = 0; i < 5; i++)
 	{
 		data =  i2c_read(0);
-		// print_hex_value(data);
 	}
 	data =  i2c_read(1);
-	// print_hex_value(data);
+	uart_printstr("\r\n");
 }
 
-uint8_t	is_init()
+uint8_t	is_calibrated()
 {
-	return(i2c_read(1) & (1 << 3));
+	i2c_rstart(0x38, TW_READ);
+	uint8_t data = i2c_read(1);
+	uart_printstr("\b\b\b   \b\b\b");
+	return(data & (1 << 3));
 }
 
-int main()
+void	soft_reset()
 {
-	uart_init();
-	i2c_init();
-	i2c_start(0x38, TW_READ);
+	i2c_start(0x38, TW_WRITE);
+	i2c_write(0x5D);
+	i2c_stop();
+	_delay_ms(20);
+}
 
-	_delay_ms(40);
-	if (!is_init())
+void	calibrate()
+{
+	while (!is_calibrated())
 	{
 		uart_printstr("initializing\r\n");
 		i2c_rstart(0x38, TW_WRITE);
@@ -273,28 +286,36 @@ int main()
 		i2c_write(0x08);
 		i2c_write(0x00);
 		_delay_ms(10);
-		i2c_rstart(0x38, TW_READ);
 	}
+}
+
+void	ask_measure()
+{
 	uart_printstr("starting measure\r\n");
 	i2c_rstart(0x38, TW_WRITE);
 	i2c_write(0xAC);
 	i2c_write(0x33);
 	i2c_write(0x00);
 	_delay_ms(80);
-
-	read_measure();
 	i2c_stop();
+	_delay_ms(50);
+}
+
+int main()
+{
+	uart_init();
+	i2c_init();
 
 	while (1)
 	{
-		//measurement command
-		// _delay_ms(10);
-		// i2c_write(0x33);
-		// i2c_write(0x00);
-		// _delay_ms(90);
-
-		// read_handle();
-		// i2c_stop();
+		soft_reset();
+		i2c_start(0x38, TW_READ);
+		_delay_ms(40);
+		calibrate();
+		ask_measure();
+		read_measure();
+		i2c_stop();
+		_delay_ms(1000);
 	}
 	return 0;
 }

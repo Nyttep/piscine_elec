@@ -39,6 +39,9 @@ ${HEX_NAME}: ${NAME}
 flash: ${HEX}
 	${DUDE} ${DFLAGS}
 
+screen: all
+	screen /dev/ttyUSB0 115200
+
 clean:
 	${RM} ${NAME} && ${RM} ${HEX_NAME}
 
