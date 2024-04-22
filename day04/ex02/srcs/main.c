@@ -323,7 +323,7 @@ void	ask_measure()
 
 int main()
 {
-	float*	values[3];
+	float	values[3][2];
 	char	str[4];
 	uart_init();
 	i2c_init();
