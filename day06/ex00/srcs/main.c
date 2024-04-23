@@ -7,7 +7,7 @@ ISR(TIMER1_COMPA_vect) //interrupt function when OCR0A compare match in timer0
 {
 	switch (state)
 	{
-		case 0:
+		case 0://RED
 		{
 			PORTD &= ~(1 << PD3) & ~(1 << PD6);
 			PORTD |= (1 << PD5);
@@ -15,7 +15,7 @@ ISR(TIMER1_COMPA_vect) //interrupt function when OCR0A compare match in timer0
 			break;
 		}
 
-		case 1:
+		case 1://GREEN
 		{
 			PORTD &= ~(1 << PD3) & ~(1 << PD5);
 			PORTD |= (1 << PD6);
@@ -23,7 +23,7 @@ ISR(TIMER1_COMPA_vect) //interrupt function when OCR0A compare match in timer0
 			break;
 		}
 
-		case 2:
+		case 2://BLUE
 		{
 			PORTD &= ~(1 << PD5) & ~(1 << PD6);
 			PORTD |= (1 << PD3);
