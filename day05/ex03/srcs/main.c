@@ -145,18 +145,18 @@ int main()
 
 	size_t length = 1;
 	size_t offset = 123;
-	uint16_t	data = 0x19;
+	uint16_t	data = 0x20;
 	uint16_t	ret = 0x0;
 	
 	uart_printstr("DATA: init : ");
 	print_hex_value(data);
 	uart_printstr("\r\n");
-	if (eepromalloc_write(1, (void*)&data, length))
+	if (eepromalloc_write(3, (void*)&data, 2))
 		uart_printstr("write error\r\n");
 	uart_printstr("DATA: after write : ");
 	print_hex_value(data);
 	uart_printstr("\r\n");
-	if (eepromalloc_read(1, (void*)&ret, length))
+	if (eepromalloc_read(3, (void*)&ret, 2))
 		uart_printstr("read error\r\n");
 	uart_printstr("RET: after read 1 : ");
 	print_hex_value(ret);
@@ -166,8 +166,6 @@ int main()
 	uart_printstr("RET: after read 2 : ");
 	print_hex_value(ret);
 	uart_printstr("\r\n");
-	if (eepromalloc_free(1))
-		uart_printstr("free error\r\n");
 	if (eepromalloc_free(1))
 		uart_printstr("free error\r\n");
 	if (eepromalloc_read(1, (void*)&ret, length))
