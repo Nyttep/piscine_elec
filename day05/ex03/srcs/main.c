@@ -54,54 +54,47 @@ void print_hex_value(uint8_t data)
 	uart_printstr(hex);
 }
 
-bool	safe_eeprom_write(const void *buffer, size_t offset, size_t length)
-{
-	if (offset + 2 + length > 1023)
-		return (1);
-	if (eeprom_read_word((uint16_t*)(offset)) != MAGIC_NUM)
-		eeprom_write_word((uint16_t*)(offset), MAGIC_NUM);
-	for (uint16_t i = 0; i < length; i++)
-	{
-		eeprom_update_byte((uint8_t *) offset + 2, ((uint8_t*)buffer)[i]);
-	}
-	return (0);
-}
-
-bool	safe_eeprom_read(void *buffer, size_t offset, size_t length)
-{
-	if (offset + 2 + length > 1023)
-		return (1);
-	if (eeprom_read_word((uint16_t*)(offset)) != MAGIC_NUM)
-		return (1);
-	for (uint16_t i = 0; i < length; i++)
-	{
-		((uint8_t*)buffer)[i] = eeprom_read_byte(((uint8_t*)offset) + 2 + i);
-	}
-	return (0);
-}
-
 bool	eepromalloc_write(uint16_t id, void* buffer, uint16_t length)
 {
+	uint16_t	old_id = 0;
+	if (id == 0)
+		return (1);
+	if (6 + length >= 1023)
+		return (1);
 	for (uint16_t i = 0; i < 1023;)
 	{
 		if (eeprom_read_word((uint16_t*)i) != MAGIC_NUM)
 		{
+			if (i + 6 + length >= 1023)
+				return (1);
 			eeprom_write_word((uint16_t*)i, MAGIC_NUM);
-			eeprom_update_word((uint16_t*)i, id);
-			eeprom_update_word((uint16_t*)i, length);
-			eeprom_update_block(buffer, (uint16_t*)i, length);\
+			eeprom_update_word((uint16_t*)(i + 2), id);
+			eeprom_update_word((uint16_t*)(i + 4), length);
+			eeprom_update_block(buffer, (uint16_t*)(i + 6), length);
+			if (old_id != 0)
+				eeprom_write_word((uint16_t*)i, (uint16_t)0);
 			return (0);
 		}
 		i += 2;
-		if (eeprom_read_word((uint16_t*)i) == id)
+		if (eeprom_read_word((uint16_t*)i) == id || eeprom_read_word((uint16_t*)i) == 0)
 		{
 			i += 2;
-			eeprom_update_word((uint16_t*)i, length);
-			eeprom_update_block(buffer, (uint16_t*)i, length);\
-			return (0);
+			if (eeprom_read_word((uint16_t*)i) <= length)
+			{
+				if (i + 2 + length >= 1023)
+					return (1);
+				eeprom_update_word((uint16_t*)i, length);
+				eeprom_update_block(buffer, (uint16_t*)(i + 2), length);
+				if (old_id != 0)
+					eeprom_write_word((uint16_t*)i, (uint16_t)0);
+				return (0);
+			}
+			if (eeprom_read_word((uint16_t*)i) != 0)
+				old_id = i - 2;
 		}
-		i += 2;
-		i += eeprom_read_word((uint16_t*)i);
+		else
+			i += 2;
+		i += eeprom_read_word((uint16_t*)i) + 2;
 	}
 	return (1);
 }
@@ -118,14 +111,32 @@ bool	eepromalloc_read(uint16_t id, void* buffer, uint16_t length)
 				eeprom_read_block(buffer, (uint16_t*)(i + 4), length);
 				return (0);
 			}
+			i += eeprom_read_word((uint16_t*)(i + 2)) + 2;
 		}
-		i += 2;
+		else
+			i += 2;
 	}
+	return (1);
 }
-//utiliser un seul magic num au tt debut, ensuite se demerder avec les len dans les header (quand free pas delete les headers)
+
 bool	eepromalloc_free(uint16_t id)
 {
-
+	for (uint16_t i = 0; i < 1023;)
+	{
+		if (eeprom_read_word((uint16_t*)i) == MAGIC_NUM)
+		{
+			i += 2;
+			if (eeprom_read_word((uint16_t*)i) == id)
+			{
+				eeprom_write_word((uint16_t*)(i - 2), (uint16_t)0);
+				return (0);
+			}
+			i += eeprom_read_word((uint16_t*)(i + 2)) + 2;
+		}
+		else
+			i += 2;
+	}
+	return (1);
 }
 
 int main()
@@ -134,16 +145,36 @@ int main()
 
 	size_t length = 1;
 	size_t offset = 123;
-	uint8_t	data = 0x14;
-	uint8_t	ret = 0x0;
+	uint16_t	data = 0x19;
+	uint16_t	ret = 0x0;
 	
-	if (safe_eeprom_write((void*)&data, offset, length))
-		uart_printstr("didnt find magic nmber in write");
+	uart_printstr("DATA: init : ");
 	print_hex_value(data);
-	if (safe_eeprom_read((void*)&ret, offset, length))
-		uart_printstr("didnt find magic nmber in read");
+	uart_printstr("\r\n");
+	if (eepromalloc_write(1, (void*)&data, length))
+		uart_printstr("write error\r\n");
+	uart_printstr("DATA: after write : ");
 	print_hex_value(data);
+	uart_printstr("\r\n");
+	if (eepromalloc_read(1, (void*)&ret, length))
+		uart_printstr("read error\r\n");
+	uart_printstr("RET: after read 1 : ");
 	print_hex_value(ret);
+	uart_printstr("\r\n");
+	if (eepromalloc_read(2, (void*)&ret, length))
+		uart_printstr("read error\r\n");
+	uart_printstr("RET: after read 2 : ");
+	print_hex_value(ret);
+	uart_printstr("\r\n");
+	if (eepromalloc_free(1))
+		uart_printstr("free error\r\n");
+	if (eepromalloc_free(1))
+		uart_printstr("free error\r\n");
+	if (eepromalloc_read(1, (void*)&ret, length))
+		uart_printstr("read error\r\n");
+	uart_printstr("RET: after read/free : ");
+	print_hex_value(ret);
+	uart_printstr("\r\n");
 	while (1)
 	{
 	}
