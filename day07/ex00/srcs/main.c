@@ -58,17 +58,17 @@ void print_hex_value(uint8_t data)
 	uart_printstr(hex);
 }
 
-void	read_adc()
+void	read_adc(uint8_t pin)
 {
 	PRR &= ~(1 << PRADC);//disabling power reduction
+
+	ADMUX = pin;//select which pin to read, here the ADC0
 
 	//setting voltage reference as AVcc
 	ADMUX |= (1 << REFS0);
 	ADMUX &= ~(1 << REFS1);
 
-	ADMUX |= (1 << ADLAR);//left adjust the result (push it to the left)
-	
-	ADMUX &= ~(1 << MUX0) & ~(1 << MUX1) & ~(1 << MUX2) & ~(1 << MUX3);//select which pin to read, here the ADC0
+	ADMUX |= (1 << ADLAR);//left adjust the result (push it to the left)	
 
 	ADCSRA |= (1 << ADPS0) | (1 << ADPS1)| (1 << ADPS2);//sets the prescaler at 128
 
@@ -83,7 +83,7 @@ int main()
 	
 	while (1)
 	{
-		read_adc();
+		read_adc(0b00000000);
 		while (ADCSRA & (1 << ADSC));
 		print_hex_value(ADCH);
 		uart_printstr("\r\n");
