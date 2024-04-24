@@ -1,6 +1,6 @@
 
 CC = avr-gcc
-CFLAGS = -mmcu=atmega328p -DF_CPU=${F_CPU}
+CFLAGS = -mmcu=atmega328p -Os -DF_CPU=${F_CPU}
 
 OBJCPY = avr-objcopy
 OFLAGS = -O ihex
