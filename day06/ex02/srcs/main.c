@@ -20,7 +20,8 @@ void	init_rgb()
 	TCCR0B &= ~(1 << CS00) & ~(1 << CS01);
 	TCCR0B |= (1 << CS00);
 
-	TCCR0A |= (1 << COM0A0) | (1 << COM0A1) | (1 << COM0B0) | (1 << COM0B1);
+	TCCR0A |= (1 << COM0A1) | (1 << COM0B1);
+	TCCR0A &= ~(1 << COM0A0) & ~(COM0B0); 
 
 	OCR0A = 0; //setting max value of timer1 to (16000000 / 255) / 244 to get 200Hz(p131-132)
 	OCR0B = 0;
@@ -34,7 +35,8 @@ void	init_rgb()
 	TCCR2B &= ~(1 << CS20);
 	TCCR2B |= (1 << CS21) | (1 << CS22);
 
-	TCCR2A |= (1 << COM2B0) | (1 << COM2B1);
+	TCCR2A |= (1 << COM2B1);
+	TCCR2A &= ~(1 << COM2B0);
 
 	OCR2B = 0; //setting max value of timer1 to (16000000 / 255) / 244 to get 200Hz(p131-132)
 
